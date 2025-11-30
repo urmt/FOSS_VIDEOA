@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOSS_VIDEOA Control Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #4a90e2;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #4a90e2;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            color: #4a90e2;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #4a90e2;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(74, 144, 226, 0.2);
+        }
+
+        .tab-btn.active {
+            background: #4a90e2;
+            border-color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4a90e2;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #4a90e2;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .btn.danger {
+            background: #e74c3c;
+        }
+
+        .btn.danger:hover {
+            background: #c0392b;
+        }
+
+        .btn.success {
+            background: #27ae60;
+        }
+
+        .btn.success:hover {
+            background: #229954;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter input,
+        .search-filter select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a90e2;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .search-filter input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .topic-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .topic-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4a90e2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .topic-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .topic-item.priority-1 {
+            border-left-color: #e74c3c;
+        }
+
+        .topic-item.priority-2 {
+            border-left-color: #f39c12;
+        }
+
+        .topic-item.priority-3 {
+            border-left-color: #3498db;
+        }
+
+        .topic-item.completed {
+            opacity: 0.6;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .topic-info {
+            flex: 1;
+        }
+
+        .topic-info h4 {
+            margin-bottom: 5px;
+            color: #4a90e2;
+        }
+
+        .topic-info .meta {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .topic-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topic-actions button {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-pending {
+            background: #95a5a6;
+        }
+
+        .status-in-progress {
+            background: #f39c12;
+        }
+
+        .status-completed {
+            background: #27ae60;
+        }
+
+        .pipeline-monitor {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .pipeline-stage {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4a90e2;
+        }
+
+        .pipeline-stage h3 {
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        .pipeline-stage .status {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4a90e2, #27ae60);
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .log-viewer {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry.error {
+            color: #e74c3c;
+        }
+
+        .log-entry.success {
+            color: #27ae60;
+        }
+
+        .log-entry.info {
+            color: #4a90e2;
+        }
+
+        .script-preview {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .script-preview h3 {
+            color: #4a90e2;
+            margin-bottom: 15px;
+        }
+
+        .script-preview .field {
+            margin-bottom: 15px;
+        }
+
+        .script-preview .field label {
+            display: block;
+            color: #4a90e2;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .script-preview .field .value {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #4a90e2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e3c72;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #4a90e2;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #357abd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 FOSS_VIDEOA Control Center</h1>
+            <p>Automated Ardour Short-Video Factory | 100% Open Source | 100% Local | 100% Based</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="stat-total">100</h3>
+                <p>Total Topics</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="stat-completed">0</h3>
+                <p>Completed</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="stat-in-progress">0</h3>
+                <p>In Progress</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="stat-pending">100</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="stat-priority1">10</h3>
+                <p>Priority 1</p>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('topics')">📋 Topic Queue</button>
+            <button class="tab-btn" onclick="switchTab('pipeline')">⚙️ Pipeline Monitor</button>
+            <button class="tab-btn" onclick="switchTab('scripts')">📝 Script Generator</button>
+            <button class="tab-btn" onclick="switchTab('logs')">📊 Logs</button>
+        </div>
+
+        <!-- Topic Queue Tab -->
+        <div id="tab-topics" class="tab-content active">
+            <div class="controls">
+                <button class="btn success" onclick="loadTopics()">🔄 Refresh Topics</button>
+                <button class="btn" onclick="exportTopics()">💾 Export Queue</button>
+                <button class="btn" onclick="showBulkActions()">🔧 Bulk Actions</button>
+            </div>
+
+            <div class="search-filter">
+                <input type="text" id="search-topics" placeholder="Search topics..." oninput="filterTopics()">
+                <select id="filter-priority" onchange="filterTopics()">
+                    <option value="">All Priorities</option>
+                    <option value="1">Priority 1</option>
+                    <option value="2">Priority 2</option>
+                    <option value="3">Priority 3</option>
+                </select>
+                <select id="filter-status" onchange="filterTopics()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <div id="topic-list" class="topic-list">
+                <!-- Topics will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Pipeline Monitor Tab -->
+        <div id="tab-pipeline" class="tab-content">
+            <div class="controls">
+                <button class="btn success" onclick="startPipeline()">▶️ Start Pipeline</button>
+                <button class="btn danger" onclick="stopPipeline()">⏹️ Stop Pipeline</button>
+                <button class="btn" onclick="refreshPipeline()">🔄 Refresh</button>
+            </div>
+
+            <div class="pipeline-monitor">
+                <div class="pipeline-stage">
+                    <h3>1. Script Generation</h3>
+                    <div class="status">Status: <span id="stage1-status">Idle</span></div>
+                    <div class="status">Current Topic: <span id="stage1-topic">-</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage1-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>2. GUI Automation</h3>
+                    <div class="status">Status: <span id="stage2-status">Idle</span></div>
+                    <div class="status">Action: <span id="stage2-action">-</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage2-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>3. OBS Recording</h3>
+                    <div class="status">Status: <span id="stage3-status">Idle</span></div>
+                    <div class="status">Duration: <span id="stage3-duration">0s / 55s</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage3-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>4. Subtitle Generation</h3>
+                    <div class="status">Status: <span id="stage4-status">Idle</span></div>
+                    <div class="status">Model: <span id="stage4-model">Whisper-large-v3</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage4-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>5. Voice Synthesis</h3>
+                    <div class="status">Status: <span id="stage5-status">Idle</span></div>
+                    <div class="status">Model: <span id="stage5-model">XTTS-v2</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage5-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>6. Background Generation</h3>
+                    <div class="status">Status: <span id="stage6-status">Idle</span></div>
+                    <div class="status">Model: <span id="stage6-model">SD3 Medium</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage6-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>7. FFmpeg Assembly</h3>
+                    <div class="status">Status: <span id="stage7-status">Idle</span></div>
+                    <div class="status">Output: <span id="stage7-output">-</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage7-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-stage">
+                    <h3>8. Upload</h3>
+                    <div class="status">Status: <span id="stage8-status">Idle</span></div>
+                    <div class="status">Platform: <span id="stage8-platform">-</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="stage8-progress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script Generator Tab -->
+        <div id="tab-scripts" class="tab-content">
+            <div class="controls">
+                <button class="btn success" onclick="generateScript()">✨ Generate Script</button>
+                <button class="btn" onclick="clearScriptPreview()">🗑️ Clear Preview</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px; color: #4a90e2; font-weight: bold;">Select Topic:</label>
+                <select id="script-topic-select" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #4a90e2; color: #fff; border-radius: 5px; font-size: 1em;">
+                    <option value="">Choose a topic...</option>
+                </select>
+            </div>
+
+            <div id="script-preview" class="script-preview">
+                <p style="opacity: 0.6;">No script generated yet. Select a topic and click "Generate Script".</p>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="tab-logs" class="tab-content">
+            <div class="controls">
+                <button class="btn" onclick="clearLogs()">🗑️ Clear Logs</button>
+                <button class="btn" onclick="exportLogs()">💾 Export Logs</button>
+            </div>
+
+            <div id="log-viewer" class="log-viewer">
+                <div class="log-entry info">[INFO] Control Center initialized</div>
+                <div class="log-entry info">[INFO] Ready to process topics</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Script Details -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Topic Details</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let topicsData = null;
+        let currentScript = null;
+
+        // API Base URL
+        const API_BASE = window.location.origin;
+
+        // Load topics from backend API
+        async function loadTopics() {
+            try {
+                addLog('Loading topics from backend API...', 'info');
+                const response = await fetch(`${API_BASE}/api/topics`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                topicsData = data.topics;
+                
+                updateStats();
+                renderTopics();
+                populateScriptTopicSelect();
+                
+                addLog(`Successfully loaded ${topicsData.length} topics from backend`, 'success');
+            } catch (error) {
+                addLog(`Error loading topics: ${error.message}`, 'error');
+                console.error('Error loading topics:', error);
+                // Show user-friendly error
+                alert('Could not connect to backend API. Make sure the Flask server is running on port 5000.');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            if (!topicsData) return;
+
+            const completed = topicsData.filter(t => t.status === 'completed').length;
+            const inProgress = topicsData.filter(t => t.status === 'in_progress').length;
+            const pending = topicsData.filter(t => t.status === 'pending').length;
+            const priority1 = topicsData.filter(t => t.priority === 1).length;
+
+            document.getElementById('stat-total').textContent = topicsData.length;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-in-progress').textContent = inProgress;
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-priority1').textContent = priority1;
+        }
+
+        // Render topics list
+        function renderTopics(filteredTopics = null) {
+            const topics = filteredTopics || topicsData;
+            if (!topics) return;
+
+            const container = document.getElementById('topic-list');
+            container.innerHTML = '';
+
+            topics.forEach(topic => {
+                const item = document.createElement('div');
+                item.className = `topic-item priority-${topic.priority} ${topic.status}`;
+                
+                item.innerHTML = `
+                    <div class="topic-info">
+                        <h4>#${topic.id} - ${topic.title}</h4>
+                        <div class="meta">
+                            Priority: ${topic.priority} 
+                            <span class="status-badge status-${topic.status}">${topic.status.replace('_', ' ').toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="topic-actions">
+                        <button class="btn" onclick="viewTopicDetails(${topic.id})">👁️ View</button>
+                        <button class="btn success" onclick="generateScriptForTopic(${topic.id})">✨ Generate</button>
+                        <button class="btn" onclick="updateTopicStatus(${topic.id}, 'completed')">✅</button>
+                    </div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        // Filter topics
+        function filterTopics() {
+            if (!topicsData) return;
+
+            const searchTerm = document.getElementById('search-topics').value.toLowerCase();
+            const priorityFilter = document.getElementById('filter-priority').value;
+            const statusFilter = document.getElementById('filter-status').value;
+
+            let filtered = topicsData.filter(topic => {
+                const matchesSearch = topic.title.toLowerCase().includes(searchTerm);
+                const matchesPriority = !priorityFilter || topic.priority == priorityFilter;
+                const matchesStatus = !statusFilter || topic.status === statusFilter;
+                
+                return matchesSearch && matchesPriority && matchesStatus;
+            });
+
+            renderTopics(filtered);
+        }
+
+        // Populate script topic selector
+        function populateScriptTopicSelect() {
+            if (!topicsData) return;
+
+            const select = document.getElementById('script-topic-select');
+            select.innerHTML = '<option value="">Choose a topic...</option>';
+
+            topicsData.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic.id;
+                option.textContent = `#${topic.id} - ${topic.title} (P${topic.priority})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Generate script using backend API
+        async function generateScript() {
+            const topicId = document.getElementById('script-topic-select').value;
+            if (!topicId) {
+                addLog('Please select a topic first', 'error');
+                return;
+            }
+
+            const topic = topicsData.find(t => t.id == topicId);
+            if (!topic) return;
+
+            addLog(`Generating script for topic #${topicId}: ${topic.title}`, 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/script/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic_id: parseInt(topicId) })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const mockScript = await response.json();
+
+            currentScript = mockScript;
+
+            // Display script preview
+            const preview = document.getElementById('script-preview');
+            preview.innerHTML = `
+                <h3>Generated Script for: ${topic.title}</h3>
+                
+                <div class="field">
+                    <label>Hook:</label>
+                    <div class="value">${mockScript.hook}</div>
+                </div>
+
+                <div class="field">
+                    <label>Tone:</label>
+                    <div class="value">${mockScript.tone}</div>
+                </div>
+
+                <div class="field">
+                    <label>Explanation Steps:</label>
+                    <div class="value">${mockScript.explanation.map((s, i) => `${i + 1}. ${s}`).join('<br>')}</div>
+                </div>
+
+                <div class="field">
+                    <label>Demo Actions:</label>
+                    <div class="value">${mockScript.demo_actions.map((a, i) => `${i + 1}. ${a}`).join('<br>')}</div>
+                </div>
+
+                <div class="field">
+                    <label>Voiceover Text (${mockScript.voiceover_text.split(' ').length} words):</label>
+                    <div class="value">${mockScript.voiceover_text}</div>
+                </div>
+
+                <div class="field">
+                    <label>On-screen Text:</label>
+                    <div class="value">${mockScript.onscreen_text.join('<br>')}</div>
+                </div>
+
+                <div class="field">
+                    <label>Hashtags:</label>
+                    <div class="value">${mockScript.hashtags.join(' ')}</div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn success" onclick="approveScript(${topicId})">✅ Approve & Queue for Production</button>
+                    <button class="btn danger" onclick="regenerateScript()">🔄 Regenerate</button>
+                </div>
+            `;
+
+                addLog(`Script generated successfully for topic #${topicId}`, 'success');
+            } catch (error) {
+                addLog(`Error generating script: ${error.message}`, 'error');
+                console.error('Script generation error:', error);
+            }
+        }
+
+        // Clear script preview
+        function clearScriptPreview() {
+            document.getElementById('script-preview').innerHTML = '<p style="opacity: 0.6;">No script generated yet. Select a topic and click "Generate Script".</p>';
+            currentScript = null;
+        }
+
+        // Approve script
+        function approveScript(topicId) {
+            addLog(`Script approved for topic #${topicId}. Queued for production.`, 'success');
+            updateTopicStatus(topicId, 'in_progress');
+        }
+
+        // Regenerate script
+        function regenerateScript() {
+            addLog('Regenerating script...', 'info');
+            generateScript();
+        }
+
+        // Generate script for specific topic
+        function generateScriptForTopic(topicId) {
+            document.getElementById('script-topic-select').value = topicId;
+            switchTab('scripts');
+            generateScript();
+        }
+
+        // Update topic status using backend API
+        async function updateTopicStatus(topicId, newStatus) {
+            if (!topicsData) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/topics/${topicId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                // Update local data
+                const topic = topicsData.find(t => t.id === topicId);
+                if (topic) {
+                    topic.status = newStatus;
+                    updateStats();
+                    renderTopics();
+                    addLog(`Topic #${topicId} status updated to: ${newStatus}`, 'success');
+                }
+            } catch (error) {
+                addLog(`Error updating topic status: ${error.message}`, 'error');
+                console.error('Status update error:', error);
+            }
+        }
+
+        // View topic details
+        function viewTopicDetails(topicId) {
+            const topic = topicsData.find(t => t.id === topicId);
+            if (!topic) return;
+
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <div class="field">
+                    <label>Topic ID:</label>
+                    <div class="value">#${topic.id}</div>
+                </div>
+                <div class="field">
+                    <label>Title:</label>
+                    <div class="value">${topic.title}</div>
+                </div>
+                <div class="field">
+                    <label>Priority:</label>
+                    <div class="value">Priority ${topic.priority}</div>
+                </div>
+                <div class="field">
+                    <label>Status:</label>
+                    <div class="value">
+                        <span class="status-badge status-${topic.status}">${topic.status.replace('_', ' ').toUpperCase()}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="updateTopicStatus(${topic.id}, 'pending')">Set Pending</button>
+                    <button class="btn" onclick="updateTopicStatus(${topic.id}, 'in_progress')">Set In Progress</button>
+                    <button class="btn success" onclick="updateTopicStatus(${topic.id}, 'completed')">Mark Completed</button>
+                </div>
+            `;
+
+            document.getElementById('modal-title').textContent = `Topic #${topic.id}`;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        // Pipeline controls (mock)
+        function startPipeline() {
+            addLog('Starting pipeline...', 'info');
+            addLog('Pipeline started. Monitoring stages...', 'success');
+            
+            // Simulate pipeline progress
+            simulatePipelineProgress();
+        }
+
+        function stopPipeline() {
+            addLog('Stopping pipeline...', 'info');
+            addLog('Pipeline stopped.', 'success');
+        }
+
+        function refreshPipeline() {
+            addLog('Refreshing pipeline status...', 'info');
+        }
+
+        function simulatePipelineProgress() {
+            let stage = 1;
+            const interval = setInterval(() => {
+                if (stage > 8) {
+                    clearInterval(interval);
+                    addLog('Pipeline completed successfully!', 'success');
+                    return;
+                }
+
+                const progress = Math.random() * 100;
+                document.getElementById(`stage${stage}-status`).textContent = 'Running';
+                document.getElementById(`stage${stage}-progress`).style.width = `${progress}%`;
+                document.getElementById(`stage${stage}-progress`).textContent = `${Math.floor(progress)}%`;
+
+                if (progress > 95) {
+                    document.getElementById(`stage${stage}-status`).textContent = 'Completed';
+                    stage++;
+                }
+            }, 1000);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Modal controls
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Logging
+        function addLog(message, type = 'info') {
+            const logViewer = document.getElementById('log-viewer');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            logViewer.appendChild(entry);
+            logViewer.scrollTop = logViewer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('log-viewer').innerHTML = '<div class="log-entry info">[INFO] Logs cleared</div>';
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('log-viewer').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `foss_videoa_logs_${Date.now()}.txt`;
+            a.click();
+            addLog('Logs exported', 'success');
+        }
+
+        // Export functions
+        function exportTopics() {
+            if (!topicsData) return;
+            const blob = new Blob([JSON.stringify({ topics: topicsData, metadata: { exported: new Date().toISOString() } }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `topic_queue_export_${Date.now()}.json`;
+            a.click();
+            addLog('Topic queue exported', 'success');
+        }
+
+        function showBulkActions() {
+            addLog('Bulk actions feature coming soon', 'info');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTopics();
+            addLog('Control Center ready', 'success');
+        });
+
+        // Close modal on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
